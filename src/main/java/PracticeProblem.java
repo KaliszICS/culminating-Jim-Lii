@@ -2,7 +2,7 @@
 Title: Minesweeper - Culminating Assignment
 Author: Jim Li
 Date Created: May 29, 2026
-Date Last Modified: May 29, 2026
+Date Last Modified: Jun 1, 2026
  */
 
 import java.util.Scanner;
@@ -70,8 +70,8 @@ public class PracticeProblem {
 
 		//this array records each action/move
 		//the first digit determines the type of action: 0 = invalid input, 1 = reveal, 2 = flag
-		//the second and third digit are for the column number and row number, respectively.
-		int[] action = {0, 0, 0};
+		//the second and third digit are for the row number and column number, respectively.
+		int[] action = new int[3];
 
 		//take first action (no flagging)
 		System.out.print("Input first action: ");
@@ -85,14 +85,15 @@ public class PracticeProblem {
 			}
 		}
 		action[0] = 0;
+		int row = action[1], col = action[2];
+		display[row][col] = '0';
 		
 		//generate the actual board
-		char[][] board = generateBoard(gridSize, mines, action[1], action[2]);
+		char[][] board = generateBoard(gridSize, mines, row, col);
 		printArray(board, gridSize);
 
 		//print starting board
-		display[action[1]][action[2]] = '0';
-		display = clear(display, board, gridSize, action[1], action[2]);
+		display = clear(display, board, gridSize, row, col);
 		printArray(display, gridSize);
 
 		//this is where the game actually begins
@@ -108,21 +109,19 @@ public class PracticeProblem {
 					System.out.print("Invalid Input!\nInput first action: ");
 				}
 			}
-			int row = action[1], col = action[2]; //indexes of selected tile
-			if (action[0] == 1){
-				if (display[row][col] != board[row][col]){
-					revealedTiles++;
-					display[row][col] = board[row][col];
-				}
-				if (display[row][col] == 'M'){
+			row = action[1];
+			col = action[2]; //indexes of selected tile
+			if (action[0] == 1){ //if action is reveal
+				display[row][col] = board[row][col]; //show tile
+				if (display[row][col] == 'M'){ //if mine
 					loss = true;
 				}
 				//automatic clearing
-				if (display[row][col] == '0'){
+				if (display[row][col] == '0'){ //if 0 is revealed
 					display = clear(display, board, gridSize, row, col);
 				}
 			}
-			if (action[0] == 2){
+			if (action[0] == 2){ //if flag
 				if (display[row][col] == '?'){
 					display[row][col] = 'F';
 					flags++;
@@ -246,21 +245,11 @@ public class PracticeProblem {
 		}
 
 		//process the X and Y coordinates
-		if (splitInput[1].matches("[\\d+]")){
-			if (Integer.parseInt(splitInput[1]) < gridSize){
-				action[1] = Integer.parseInt(splitInput[1]);
-				if (action[1] >= gridSize){
-					action[0] = 0;
-				}
-			}
+		if (splitInput[1].matches("[0-9]+") && Integer.parseInt(splitInput[1]) < gridSize){
+			action[1] = Integer.parseInt(splitInput[1]);
 		}
-		if (splitInput[2].matches("[\\d+]")){
-			if (Integer.parseInt(splitInput[2]) < gridSize){
-				action[2] = Integer.parseInt(splitInput[2]);
-				if (action[2] >= gridSize){
-					action[0] = 0;
-				}
-			}
+		if (splitInput[2].matches("[0-9]+") && Integer.parseInt(splitInput[2]) < gridSize){
+			action[2] = Integer.parseInt(splitInput[2]);
 		}
 		return action;
 	}
