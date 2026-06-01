@@ -76,7 +76,7 @@ public class PracticeProblem {
 		//take first action (no flagging)
 		System.out.print("Input first action: ");
 		while (action[0] != 1){ //while invalid
-			action = processAction(gridSize);
+			action = processAction(display, gridSize);
 			if (action[0] == 0){
 				System.out.print("Invalid Input!\nInput first action: ");
 			}
@@ -103,10 +103,13 @@ public class PracticeProblem {
 		while (!loss && revealedTiles < tiles - mines){
 			System.out.println("Flags left: " + (mines - flags));
 			System.out.print("Input next action: ");
-			while (action[0] == 0){
-				action = processAction(gridSize);
+			while (action[0] == 0 || action[0] == 3){
+				action = processAction(display, gridSize);
 				if (action[0] == 0){
-					System.out.print("Invalid Input!\nInput first action: ");
+					System.out.print("Invalid Input!\nInput next action: ");
+				}
+				if (action[0] == 3){ //if you try to reveal a flag
+					System.out.print("You put a flag there for a reason.\nInput next action: ");
 				}
 			}
 			row = action[1];
@@ -125,6 +128,9 @@ public class PracticeProblem {
 				if (display[row][col] == '?'){
 					display[row][col] = 'F';
 					flags++;
+				} else if (display[row][col] == 'F'){
+					display[row][col] = '?';
+					flags--;
 				}
 			}
 			action[0] = 0; //reset action
@@ -223,7 +229,7 @@ public class PracticeProblem {
 
 	//method that requests input then converts it into action	
 	//if input is invalid, it will return 0 at index 0
-	public static int[] processAction(int gridSize){
+	public static int[] processAction(char[][] display, int gridSize){
 		Scanner input = new Scanner(System.in);
 		int[] action = {0, 0, 0};
 		String actionInput = input.nextLine(); //get input
@@ -250,6 +256,11 @@ public class PracticeProblem {
 		}
 		if (splitInput[2].matches("[0-9]+") && Integer.parseInt(splitInput[2]) < gridSize){
 			action[2] = Integer.parseInt(splitInput[2]);
+		}
+
+		//if you try to reveal a flag for some reason
+		if (action[0] == 1 && display[action[1]][action[2]] == 'F'){
+			action[0] = 3;
 		}
 		return action;
 	}
@@ -333,7 +344,7 @@ public class PracticeProblem {
 
 	//method that prints 2D arrays, for displaying field and testing. Also shows coordinates.
 	public static void printArray(char[][] array, int gridSize){
-		System.out.print("   ");
+		System.out.print("\n   ");
 		for (int i = 0; i < gridSize; i++){
 			System.out.print(i);
 			if (i < 10){
