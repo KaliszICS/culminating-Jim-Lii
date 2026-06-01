@@ -57,7 +57,7 @@ public class PracticeProblem {
 			}
 		}
 
-		//create the display array (starts as just question marks), only array visible to player
+		//create the display array (starts as just question marks). Only array visible to player
 		char[][] display = new char[gridSize][gridSize];
 		for (int i = 0; i < gridSize; i++){
 			for (int j = 0; j < gridSize; j++){
@@ -65,15 +65,15 @@ public class PracticeProblem {
 			}
 		}
 
-		//print starting board
+		//print display (starting board)
 		printArray(display, gridSize);
 
-		//this array records the next action
+		//this array records each action/move
 		//the first digit determines the type of action: 0 = invalid input, 1 = reveal, 2 = flag
 		//the second and third digit are for the column number and row number, respectively.
 		int[] action = {0, 0, 0};
 
-		//take first action
+		//take first action (no flagging)
 		System.out.print("Input first action: ");
 		while (action[0] != 1){ //while invalid
 			action = processAction(gridSize);
@@ -88,17 +88,17 @@ public class PracticeProblem {
 		
 		//generate the actual board
 		char[][] board = generateBoard(gridSize, mines, action[1], action[2]);
-		printArray(board, gridSize); //DELETE THIS LATER
+		printArray(board, gridSize);
 
 		//print starting board
-		display[action[1]][action[2]] = board[action[1]][action[2]];
+		display[action[1]][action[2]] = '0';
 		display = clear(display, board, gridSize, action[1], action[2]);
 		printArray(display, gridSize);
 
 		//this is where the game actually begins
 		boolean loss = false; //boolean for if the player hits a mine
-		int flags = 0, tiles = gridSize * gridSize, revealedTiles = 1; //one tile has already been revealed
-
+		int flags = 0, tiles = gridSize * gridSize, revealedTiles = tiles - count(display, '?');
+		//game goes until a mine is hit or everything has been revealed
 		while (!loss && revealedTiles < tiles - mines){
 			System.out.println("Flags left: " + (mines - flags));
 			System.out.print("Input next action: ");
@@ -129,13 +129,16 @@ public class PracticeProblem {
 				}
 			}
 			action[0] = 0; //reset action
+			revealedTiles = gridSize * gridSize - count(display, '?') - count(display, 'F');
 			printArray(display, gridSize);
 		}
 		
 		//ending message
 		if (loss){
+			printArray(board, gridSize);
 			System.out.println("You Lost!");
 		} else {
+			printArray(board, gridSize);
 			System.out.println("You Win!");
 		}
 	}
@@ -171,7 +174,7 @@ public class PracticeProblem {
 		return board;
 	}
 
-	//method that counts surrounding mines
+	//method that counts surrounding mines, for board generation
 	public static char findMines(char[][] board, int gridSize, int row, int col){
 		if (board[row][col] == '0'){ //if selected tile is 0
 			char counter = '0';
@@ -206,6 +209,19 @@ public class PracticeProblem {
 		return 'M'; //if it's a mine
 	}
 
+	//method that counts the amount of a certain character in a character array
+	public static int count(char[][] array, char target){
+		int counter = 0;
+		for (int i = 0; i < array.length; i++){
+			for (int j = 0; j < array.length; j++){
+				if (array[i][j] == target){
+					counter++;
+				}
+			}
+		}
+		return counter;
+	}
+
 	//method that requests input then converts it into action	
 	//if input is invalid, it will return 0 at index 0
 	public static int[] processAction(int gridSize){
@@ -234,7 +250,7 @@ public class PracticeProblem {
 			if (Integer.parseInt(splitInput[1]) < gridSize){
 				action[1] = Integer.parseInt(splitInput[1]);
 				if (action[1] >= gridSize){
-					action[1] = 0;
+					action[0] = 0;
 				}
 			}
 		}
@@ -242,7 +258,7 @@ public class PracticeProblem {
 			if (Integer.parseInt(splitInput[2]) < gridSize){
 				action[2] = Integer.parseInt(splitInput[2]);
 				if (action[2] >= gridSize){
-					action[2] = 0;
+					action[0] = 0;
 				}
 			}
 		}
