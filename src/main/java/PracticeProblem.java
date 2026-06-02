@@ -30,10 +30,10 @@ public class PracticeProblem {
 		int gridSize = 0;
 		while (gridSize < 4 || gridSize > 40){
 			while (!input.hasNextInt()){
-				input.nextLine();
 				if (!input.hasNextInt()){
 					System.out.print("Invalid input!\nInput grid size (between 4 and 40): ");
 				}
+				input.nextLine();
 			}
 			gridSize = input.nextInt();
 			if (gridSize < 4 || gridSize > 40){
@@ -46,10 +46,10 @@ public class PracticeProblem {
 		int mines = 0;
 		while (mines < 1 || mines > gridSize * gridSize - 9){
 			while (!input.hasNextInt()){
-				input.nextLine();
 				if (!input.hasNextInt()){
 					System.out.print("Invalid input!\nInput mine amount (between 1 and # of tiles, minus 9): ");
 				}
+				input.nextLine();
 			}
 			mines = input.nextInt();
 			if (mines < 1 || mines > gridSize * gridSize - 9){
@@ -61,7 +61,7 @@ public class PracticeProblem {
 		char[][] display = new char[gridSize][gridSize];
 		for (int i = 0; i < gridSize; i++){
 			for (int j = 0; j < gridSize; j++){
-				display[i][j] = '?';
+				display[j][i] = '?';
 			}
 		}
 
@@ -70,7 +70,7 @@ public class PracticeProblem {
 
 		//this array records each action/move
 		//the first digit determines the type of action: 0 = invalid input, 1 = reveal, 2 = flag
-		//the second and third digit are for the row number and column number, respectively.
+		//the second and third digit are for the column number and row number, respectively.
 		int[] action = new int[3];
 
 		//take first action (no flagging)
@@ -85,15 +85,15 @@ public class PracticeProblem {
 			}
 		}
 		action[0] = 0;
-		int row = action[1], col = action[2];
-		display[row][col] = '0';
+		int col = action[1], row = action[2];
+		display[col][row] = '0';
 		
 		//generate the actual board
-		char[][] board = generateBoard(gridSize, mines, row, col);
+		char[][] board = generateBoard(gridSize, mines, col, row);
 		printArray(board, gridSize);
 
 		//print starting board
-		display = clear(display, board, gridSize, row, col);
+		display = clear(display, board, gridSize, col, row);
 		printArray(display, gridSize);
 
 		//this is where the game actually begins
@@ -112,24 +112,24 @@ public class PracticeProblem {
 					System.out.print("You put a flag there for a reason.\nInput next action: ");
 				}
 			}
-			row = action[1];
-			col = action[2]; //indexes of selected tile
+			col = action[1];
+			row = action[2]; //indexes of selected tile
 			if (action[0] == 1){ //if action is reveal
-				display[row][col] = board[row][col]; //show tile
-				if (display[row][col] == 'M'){ //if mine
+				display[col][row] = board[col][row]; //show tile
+				if (display[col][row] == 'M'){ //if mine
 					loss = true;
 				}
 				//automatic clearing
-				if (display[row][col] == '0'){ //if 0 is revealed
-					display = clear(display, board, gridSize, row, col);
+				if (display[col][row] == '0'){ //if 0 is revealed
+					display = clear(display, board, gridSize, col, row);
 				}
 			}
 			if (action[0] == 2){ //if flag
-				if (display[row][col] == '?'){
-					display[row][col] = 'F';
+				if (display[col][row] == '?'){
+					display[col][row] = 'F';
 					flags++;
-				} else if (display[row][col] == 'F'){
-					display[row][col] = '?';
+				} else if (display[col][row] == 'F'){
+					display[col][row] = '?';
 					flags--;
 				}
 			}
@@ -153,10 +153,10 @@ public class PracticeProblem {
 		//mine generation
 		Random random = new Random();
 		char[][] board = new char[gridSize][gridSize];
-		//fill the array
+		//create the board
 		for (int i = 0; i < gridSize; i++){
 			for (int j = 0; j < gridSize; j++){
-				board[i][j] = '0';
+				board[j][i] = '0';
 			}
 		}
 		int placedMines = 0;
@@ -173,40 +173,40 @@ public class PracticeProblem {
 		//number generation
 		for (int i = 0; i < gridSize; i++){
 			for (int j = 0; j < gridSize; j++){
-				board[i][j] = findMines(board, gridSize, i, j);
+				board[j][i] = findMines(board, gridSize, j, i);
 			}
 		}
 		return board;
 	}
 
 	//method that counts surrounding mines, for board generation
-	public static char findMines(char[][] board, int gridSize, int row, int col){
-		if (board[row][col] == '0'){ //if selected tile is 0
+	public static char findMines(char[][] board, int gridSize, int col, int row){
+		if (board[col][row] == '0'){ //if selected tile is 0
 			char counter = '0';
 			//first if: checks if index is out of bounds
 			//second if: checks if index is a mine
-			if (row - 1 > -1 && col - 1 > -1 && board[row-1][col-1] == 'M'){ //up left
+			if (col - 1 > -1 && row - 1 > -1 && board[col-1][row-1] == 'M'){ //up left
 				counter++;
 			}
-			if (row - 1 > -1 && board[row-1][col] == 'M'){ //up
+			if (col - 1 > -1 && board[col-1][row] == 'M'){ //left
 				counter++;
 			}
-			if (row - 1 > -1 && col + 1 < gridSize && board[row-1][col+1] == 'M'){ //up right
+			if (col - 1 > -1 && row + 1 < gridSize && board[col-1][row+1] == 'M'){ //down left
 				counter++;
 			}
-			if (col + 1 < gridSize && board[row][col+1] == 'M'){ //right
+			if (row + 1 < gridSize && board[col][row+1] == 'M'){ //down
 				counter++;
 			}
-			if (row + 1 < gridSize && col + 1 < gridSize && board[row+1][col+1] == 'M'){ //down right
+			if (col + 1 < gridSize && row + 1 < gridSize && board[col+1][row+1] == 'M'){ //down right
 				counter++;
 			}
-			if (row + 1 < gridSize && board[row+1][col] == 'M'){ //down
+			if (col + 1 < gridSize && board[col+1][row] == 'M'){ //right
 				counter++;
 			}
-			if (row + 1 < gridSize && col - 1 > -1 && board[row+1][col-1] == 'M'){ //down left
+			if (col + 1 < gridSize && row - 1 > -1 && board[col+1][row-1] == 'M'){ //up right
 				counter++;
 			}
-			if (col - 1 > -1 && board[row][col-1] == 'M'){ //left
+			if (row - 1 > -1 && board[col][row-1] == 'M'){ //up
 				counter++;
 			}
 			return counter;
@@ -214,12 +214,12 @@ public class PracticeProblem {
 		return 'M'; //if it's a mine
 	}
 
-	//method that counts the amount of a certain character in a character array
+	//method that counts the amount of a certain character in a character array, to count revealed tiles
 	public static int count(char[][] array, char target){
 		int counter = 0;
 		for (int i = 0; i < array.length; i++){
 			for (int j = 0; j < array.length; j++){
-				if (array[i][j] == target){
+				if (array[j][i] == target){
 					counter++;
 				}
 			}
@@ -250,7 +250,7 @@ public class PracticeProblem {
 			return action;
 		}
 
-		//process the X and Y coordinates
+		//try to parse the column and row
 		if (splitInput[1].matches("[0-9]+") && Integer.parseInt(splitInput[1]) < gridSize){
 			action[1] = Integer.parseInt(splitInput[1]);
 		}
@@ -267,75 +267,75 @@ public class PracticeProblem {
 
 	//method that automatically clears the board, so the game is more playable
 	//only runs if the revealed thing is a 0
-	public static char[][] clear(char[][] display, char[][] board, int gridSize, int startRow, int startCol){
+	public static char[][] clear(char[][] display, char[][] board, int gridSize, int startCol, int startRow){
 		Queue<int[]> queue = new ArrayDeque<>(); //queue for things to visit
 		ArrayList<int[]> visited = new ArrayList<>(); //arraylist of visited tiles
-		queue.add(new int[]{startRow, startCol});
+		queue.add(new int[]{startCol, startRow});
 		while (!queue.isEmpty()){ //go until everything possible is cleared
-			int row = queue.peek()[0];
-			int col = queue.remove()[1];
-			if (!visited(visited, row, col)){
+			int col = queue.peek()[0];
+			int row = queue.remove()[1];
+			if (!visited(visited, col, row)){
 				//queue anything around the 0 that is also a 0
-				if (row - 1 > -1 && col - 1 > -1){
-					display[row - 1][col - 1] = board[row - 1][col - 1];
-					if (board[row - 1][col - 1] == '0'){
-						queue.add(new int[]{row - 1, col - 1});
+				if (col - 1 > -1 && row - 1 > -1){ //up left
+					display[col - 1][row - 1] = board[col - 1][row - 1];
+					if (board[col - 1][row - 1] == '0'){
+						queue.add(new int[]{col - 1, row - 1});
 					}
 				}
-				if (row - 1 > -1){
-					display[row - 1][col] = board[row - 1][col];
-					if (board[row - 1][col] == '0'){
-						queue.add(new int[]{row - 1, col});
+				if (col - 1 > -1){ //left
+					display[col - 1][row] = board[col - 1][row];
+					if (board[col - 1][row] == '0'){
+						queue.add(new int[]{col - 1, row});
 					}
 				}
-				if (row - 1 > -1 && col + 1 < gridSize){
-					display[row - 1][col + 1] = board[row - 1][col + 1];
-					if (board[row - 1][col + 1] == '0'){
-						queue.add(new int[]{row - 1, col + 1});
+				if (col - 1 > -1 && row + 1 < gridSize){ //down left
+					display[col - 1][row + 1] = board[col - 1][row + 1];
+					if (board[col - 1][row + 1] == '0'){
+						queue.add(new int[]{col - 1, row + 1});
 					}
 				}
-				if (col + 1 < gridSize){
-					display[row][col + 1] = board[row][col + 1];
-					if (board[row][col + 1] == '0'){
-						queue.add(new int[]{row, col + 1});	
+				if (row + 1 < gridSize){ //down
+					display[col][row + 1] = board[col][row + 1];
+					if (board[col][row + 1] == '0'){
+						queue.add(new int[]{col, row + 1});	
 					}
 				}
-				if (row + 1 < gridSize && col + 1 < gridSize){
-					display[row + 1][col + 1] = board[row + 1][col + 1];
-					if (board[row + 1][col + 1] == '0'){
-						queue.add(new int[]{row + 1, col + 1});
+				if (col + 1 < gridSize && row + 1 < gridSize){ //down right
+					display[col + 1][row + 1] = board[col + 1][row + 1];
+					if (board[col + 1][row + 1] == '0'){
+						queue.add(new int[]{col + 1, row + 1});
 					}
 				}
-				if (row + 1 < gridSize){
-					display[row + 1][col] = board[row + 1][col];
-					if (board[row + 1][col] == '0'){
-						queue.add(new int[]{row + 1, col});
+				if (col + 1 < gridSize){ //right
+					display[col + 1][row] = board[col + 1][row];
+					if (board[col + 1][row] == '0'){
+						queue.add(new int[]{col + 1, row});
 					}
 				}
-				if (row + 1 < gridSize && col - 1 > -1){
-					display[row + 1][col - 1] = board[row + 1][col - 1];
-					if (board[row + 1][col - 1] == '0'){
-						queue.add(new int[]{row + 1, col - 1});
+				if (col + 1 < gridSize && row - 1 > -1){ //up right
+					display[col + 1][row - 1] = board[col + 1][row - 1];
+					if (board[col + 1][row - 1] == '0'){
+						queue.add(new int[]{col + 1, row - 1});
 					}
 				}
-				if (col - 1 > -1){
-					display[row][col - 1] = board[row][col - 1];
-					if (board[row][col - 1] == '0'){
-						queue.add(new int[]{row, col - 1});
+				if (row - 1 > -1){ //up
+					display[col][row - 1] = board[col][row - 1];
+					if (board[col][row - 1] == '0'){
+						queue.add(new int[]{col, row - 1});
 					}
 				}
 			}
-			visited.add(new int[]{row, col});
+			visited.add(new int[]{col, row});
 		}
 		return display;
 	}
 
 	//method for clear() that checks if something has been visited
-	public static boolean visited(ArrayList<int[]> visited, int row, int col){
+	public static boolean visited(ArrayList<int[]> visited, int col, int row){
 		for (int i = 0; i < visited.size(); i++){
-			int checkRow = visited.get(i)[0];
-			int checkCol = visited.get(i)[1];
-			if (row == checkRow && col == checkCol){
+			int checkCol = visited.get(i)[0];
+			int checkRow = visited.get(i)[1];
+			if (col == checkCol && row == checkRow){
 				return true;
 			}
 		}
